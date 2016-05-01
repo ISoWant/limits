@@ -39,10 +39,4 @@ public class Payment {
    public Calendar getCalendar() {
       return calendar;
    }
-
-   public void setCalendar(Calendar calendar) {    //Для проверки
-      if (calendar != null) {
-         this.calendar = calendar;
-      } else throw new IllegalArgumentException("An invalid date of payment");
-   }
 }

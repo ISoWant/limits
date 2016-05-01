@@ -42,7 +42,7 @@ public class Limit {
       else throw new IllegalArgumentException("Incorrect total amount of payment. Must be > 0");
    }
 
-   public void setTimeLapse(int minute) {              //in minutes
+   public void setTimeLapse(int minute) {
       if (minute > 0)
          this.timeLapse = minute * 1000 * 60;
       else throw new IllegalArgumentException("Incorrect time lapse of limit. Must be > 0");

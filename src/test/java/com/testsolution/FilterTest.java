@@ -74,8 +74,7 @@ public class FilterTest {
    public void test_add_invalid_in_night() {
       Payment payment = new Payment(lenta, service2, 1007); //Не уд. лимиту 2. Не более 1000 руб. ночью с 23:00 до 9:00 утра за одну услугу(*)
       Calendar calendar = new GregorianCalendar();
-      calendar.set(Calendar.HOUR_OF_DAY, 23);
-      payment.setCalendar(calendar);
+      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 23);
       filter.paymentReview(payment);
 
       assertEquals(payment, filter.getTbc().get(0));
@@ -88,9 +87,7 @@ public class FilterTest {
 
       filter.paymentReview(payment, payment1);// payment1 не уд. лимиту 3. Не более 2000 руб. в сутки по одинаковым платежам(**)
 
-      Calendar calendar = new GregorianCalendar();
-      calendar.set(Calendar.DATE, (payment.getCalendar().get(Calendar.DATE) % 10) + 1);
-      payment1.setCalendar(calendar);
+      payment1.getCalendar().set(Calendar.DATE, (payment.getCalendar().get(Calendar.DATE) % 10) + 1);
 
       filter.paymentReview(payment1); //теперь платёжи происходят в различные дни, а значит ничто не мешает его провести
 
@@ -170,6 +167,7 @@ public class FilterTest {
       filter.addLimit(limit6);
 
       Payment payment = new Payment(karauta, service3, 10);
+      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 13);
 
       for (int i = 0; i < 45; i++) {
          filter.paymentReview(payment);
