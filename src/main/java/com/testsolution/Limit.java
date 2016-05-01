@@ -1,8 +1,6 @@
 package com.testsolution;
 
-
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.time.LocalTime;
 
 public class Limit {
    private int count;
@@ -10,8 +8,9 @@ public class Limit {
    private boolean forOneService;
    private float total;
    private long timeLapse;
-   private Calendar timeOfDayStart;
-   private Calendar timeOfDayEnd;
+   private LocalTime timeOfDayStart;
+   private LocalTime timeOfDayEnd;
+
 
    public Limit() {
       this.count = -1;
@@ -19,9 +18,8 @@ public class Limit {
       this.forOneService = false;
       this.total = -1.0f;
       this.timeLapse = -1;
-      this.timeOfDayStart = new GregorianCalendar();
-      this.timeOfDayEnd = new GregorianCalendar();
-      timeOfDayEnd.setTimeInMillis(timeOfDayStart.getTimeInMillis());
+      this.timeOfDayStart = LocalTime.MIN;
+      this.timeOfDayEnd = LocalTime.MIN;
    }
 
    public void setCount(int count) {
@@ -50,24 +48,12 @@ public class Limit {
       else throw new IllegalArgumentException("Incorrect time lapse of limit. Must be > 0");
    }
 
-   public void setTimeOfDayStart(int hourOfDay, int minute, int second) {
-      if ((hourOfDay >= 0 && hourOfDay < 24) &&
-              (minute >= 0 && minute <= 59) &&
-              (second >= 0 && second <= 59)) {
-         this.timeOfDayStart.set(Calendar.HOUR_OF_DAY, hourOfDay);
-         this.timeOfDayStart.set(Calendar.MINUTE, minute);
-         this.timeOfDayStart.set(Calendar.SECOND, second);
-      } else throw new IllegalArgumentException("Incorrectly initial set time of limit");
+   public void setTimeOfDayStart(LocalTime timeOfDayStart) {
+      this.timeOfDayStart = timeOfDayStart;
    }
 
-   public void setTimeOfDayEnd(int hourOfDay, int minute, int second) {
-      if ((hourOfDay >= 0 && hourOfDay < 24) &&
-              (minute >= 0 && minute <= 59) &&
-              (second >= 0 && second <= 59)) {
-         this.timeOfDayEnd.set(Calendar.HOUR_OF_DAY, hourOfDay);
-         this.timeOfDayEnd.set(Calendar.MINUTE, minute);
-         this.timeOfDayEnd.set(Calendar.SECOND, second);
-      } else throw new IllegalArgumentException("Incorrectly set the final time of limit");
+   public void setTimeOfDayEnd(LocalTime timeOfDayEnd) {
+      this.timeOfDayEnd = timeOfDayEnd;
    }
 
    public int getCount() {
@@ -90,12 +76,12 @@ public class Limit {
       return timeLapse;
    }
 
-   public Calendar getTimeOfDayStart() {
-      return timeOfDayStart;
+   public LocalTime getTimeOfDayEnd() {
+      return timeOfDayEnd;
    }
 
-   public Calendar getTimeOfDayEnd() {
-      return timeOfDayEnd;
+   public LocalTime getTimeOfDayStart() {
+      return timeOfDayStart;
    }
 
    @Override
