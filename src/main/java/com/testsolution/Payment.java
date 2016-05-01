@@ -11,15 +11,15 @@ public class Payment {
    public Payment(Client client, Service service, float sum) {
       if (client != null)
          this.client = client;
-      else throw new IllegalArgumentException();
+      else throw new IllegalArgumentException("An invalid client");
 
       if (service != null)
          this.service = service;
-      else throw new IllegalArgumentException();
+      else throw new IllegalArgumentException("An invalid service");
 
       if (sum >= 0)
          this.sum = sum;
-      else throw new IllegalArgumentException();
+      else throw new IllegalArgumentException("An invalid sum of payment");
 
       calendar = Calendar.getInstance();
    }
@@ -43,6 +43,6 @@ public class Payment {
    public void setCalendar(Calendar calendar) {    //Для проверки
       if (calendar != null) {
          this.calendar = calendar;
-      } else throw new IllegalArgumentException();
+      } else throw new IllegalArgumentException("An invalid date of payment");
    }
 }
