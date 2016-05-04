@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 public class Filter {
-   private ArrayList<Limit> limits = new ArrayList<Limit>();          // Массив заданных ограничений
-   private ArrayList<Payment> tbc = new ArrayList<Payment>();           // Массив платежей в статусе "требует подтверждения"
-   private ArrayList<Payment> readyToHost = new ArrayList<Payment>();   // Массив платежей в статусе "готов к проведению"
+   private ArrayList<Limit> limits = new ArrayList<Limit>();          // ╨Ь╨░╤Б╤Б╨╕╨▓ ╨╖╨░╨┤╨░╨╜╨╜╤Л╤Е ╨╛╨│╤А╨░╨╜╨╕╤З╨╡╨╜╨╕╨╣
+   private ArrayList<Payment> tbc = new ArrayList<Payment>();           // ╨Ь╨░╤Б╤Б╨╕╨▓ ╨┐╨╗╨░╤В╨╡╨╢╨╡╨╣ ╨▓ ╤Б╤В╨░╤В╤Г╤Б╨╡ "╤В╤А╨╡╨▒╤Г╨╡╤В ╨┐╨╛╨┤╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╤П"
+   private ArrayList<Payment> readyToHost = new ArrayList<Payment>();   // ╨Ь╨░╤Б╤Б╨╕╨▓ ╨┐╨╗╨░╤В╨╡╨╢╨╡╨╣ ╨▓ ╤Б╤В╨░╤В╤Г╤Б╨╡ "╨│╨╛╤В╨╛╨▓ ╨║ ╨┐╤А╨╛╨▓╨╡╨┤╨╡╨╜╨╕╤О"
 
    public ArrayList<Limit> getLimits() {
       return limits;
@@ -27,7 +27,7 @@ public class Filter {
       }
    }
 
-   public void paymentReview(Payment payment) {       // Проверка поступивших в систему платежей
+   public void paymentReview(Payment payment) {       // ╨Я╤А╨╛╨▓╨╡╤А╨║╨░ ╨┐╨╛╤Б╤В╤Г╨┐╨╕╨▓╤И╨╕╤Е ╨▓ ╤Б╨╕╤Б╤В╨╡╨╝╤Г ╨┐╨╗╨░╤В╨╡╨╢╨╡╨╣
       boolean isCorrect = true;
 
       if (payment == null) {
@@ -54,7 +54,7 @@ public class Filter {
       }
    }
 
-   private void orderedInsert(Payment payment) {      // Все платежи в readyToHost отсортированы по дате.
+   private void orderedInsert(Payment payment) {      // ╨Т╤Б╨╡ ╨┐╨╗╨░╤В╨╡╨╢╨╕ ╨▓ readyToHost ╨╛╤В╤Б╨╛╤А╤В╨╕╤А╨╛╨▓╨░╨╜╤Л ╨┐╨╛ ╨┤╨░╤В╨╡.
       int last = readyToHost.size() - 1;
       int desiredPosition = last;
 
@@ -77,30 +77,30 @@ public class Filter {
       boolean isInstalledPeriod = !limit.getTimeOfDayStart().equals(limit.getTimeOfDayEnd());
 
       if (isInstalledPeriod) {
-         Boolean flag = amountCheck(limit, payment); // Возможно изначально сумма платежа больше допустимой в этот период.
+         Boolean flag = amountCheck(limit, payment); // ╨Т╨╛╨╖╨╝╨╛╨╢╨╜╨╛ ╨╕╨╖╨╜╨░╤З╨░╨╗╤М╨╜╨╛ ╤Б╤Г╨╝╨╝╨░ ╨┐╨╗╨░╤В╨╡╨╢╨░ ╨▒╨╛╨╗╤М╤И╨╡ ╨┤╨╛╨┐╤Г╤Б╤В╨╕╨╝╨╛╨╣ ╨▓ ╤Н╤В╨╛╤В ╨┐╨╡╤А╨╕╨╛╨┤.
          if (flag != null) return flag;
       }
 
       for (Payment hostPayment : readyToHost) {
-         checkIt = clientCheck(limit, payment, hostPayment);      // Если ограничение проверяет на клиента, то выясним один ли клиент
+         checkIt = clientCheck(limit, payment, hostPayment);      // ╨Х╤Б╨╗╨╕ ╨╛╨│╤А╨░╨╜╨╕╤З╨╡╨╜╨╕╨╡ ╨┐╤А╨╛╨▓╨╡╤А╤П╨╡╤В ╨╜╨░ ╨║╨╗╨╕╨╡╨╜╤В╨░, ╤В╨╛ ╨▓╤Л╤П╤Б╨╜╨╕╨╝ ╨╛╨┤╨╕╨╜ ╨╗╨╕ ╨║╨╗╨╕╨╡╨╜╤В
 
          if (checkIt) {
-            checkIt = serviceCheck(limit, payment, hostPayment);  // Если ограничение проверяет на услугу, выясним одна ли услуга
+            checkIt = serviceCheck(limit, payment, hostPayment);  // ╨Х╤Б╨╗╨╕ ╨╛╨│╤А╨░╨╜╨╕╤З╨╡╨╜╨╕╨╡ ╨┐╤А╨╛╨▓╨╡╤А╤П╨╡╤В ╨╜╨░ ╤Г╤Б╨╗╤Г╨│╤Г, ╨▓╤Л╤П╤Б╨╜╨╕╨╝ ╨╛╨┤╨╜╨░ ╨╗╨╕ ╤Г╤Б╨╗╤Г╨│╨░
             if (checkIt) {
-               checkIt = timeLapseCheck(limit, payment, hostPayment); //Если в лимите есть ограничение по отрезку времени, то в этом ли диапозоне платёж из списка?
+               checkIt = timeLapseCheck(limit, payment, hostPayment); //╨Х╤Б╨╗╨╕ ╨▓ ╨╗╨╕╨╝╨╕╤В╨╡ ╨╡╤Б╤В╤М ╨╛╨│╤А╨░╨╜╨╕╤З╨╡╨╜╨╕╨╡ ╨┐╨╛ ╨╛╤В╤А╨╡╨╖╨║╤Г ╨▓╤А╨╡╨╝╨╡╨╜╨╕, ╤В╨╛ ╨▓ ╤Н╤В╨╛╨╝ ╨╗╨╕ ╨┤╨╕╨░╨┐╨╛╨╖╨╛╨╜╨╡ ╨┐╨╗╨░╤В╤С╨╢ ╨╕╨╖ ╤Б╨┐╨╕╤Б╨║╨░?
                if (checkIt && isInstalledPeriod) {
-                  if (limit.getTimeOfDayEnd() == LocalTime.MAX && limit.getTimeOfDayStart() == LocalTime.MIN) { // В лимите установлена проверка суток?
-                     if (!isForOneDay(payment, hostPayment)) // В течение одних суток были проведены платежи или нет?
+                  if (limit.getTimeOfDayEnd() == LocalTime.MAX && limit.getTimeOfDayStart() == LocalTime.MIN) { // ╨Т ╨╗╨╕╨╝╨╕╤В╨╡ ╤Г╤Б╤В╨░╨╜╨╛╨▓╨╗╨╡╨╜╨░ ╨┐╤А╨╛╨▓╨╡╤А╨║╨░ ╤Б╤Г╤В╨╛╨║?
+                     if (!isForOneDay(payment, hostPayment)) // ╨Т ╤В╨╡╤З╨╡╨╜╨╕╨╡ ╨╛╨┤╨╜╨╕╤Е ╤Б╤Г╤В╨╛╨║ ╨▒╤Л╨╗╨╕ ╨┐╤А╨╛╨▓╨╡╨┤╨╡╨╜╤Л ╨┐╨╗╨░╤В╨╡╨╢╨╕ ╨╕╨╗╨╕ ╨╜╨╡╤В?
                         checkIt = false;
                   } else
-                     checkIt = timeOfDayCheck(limit, hostPayment); // Попадает ли платёж из списка во временные рамки установленные лимитом
+                     checkIt = timeOfDayCheck(limit, hostPayment); // ╨Я╨╛╨┐╨░╨┤╨░╨╡╤В ╨╗╨╕ ╨┐╨╗╨░╤В╤С╨╢ ╨╕╨╖ ╤Б╨┐╨╕╤Б╨║╨░ ╨▓╨╛ ╨▓╤А╨╡╨╝╨╡╨╜╨╜╤Л╨╡ ╤А╨░╨╝╨║╨╕ ╤Г╤Б╤В╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╜╤Л╨╡ ╨╗╨╕╨╝╨╕╤В╨╛╨╝
                }
             }
          }
 
-         if (checkIt) { // Если все проверки пройдены, т.е. платёж из списка может повлиять на решение о текущем платеже
-            total += hostPayment.getSum(); //то добавляем его к итоговой сумме
-            count++;                       //и в количество платежей
+         if (checkIt) { // ╨Х╤Б╨╗╨╕ ╨▓╤Б╨╡ ╨┐╤А╨╛╨▓╨╡╤А╨║╨╕ ╨┐╤А╨╛╨╣╨┤╨╡╨╜╤Л, ╤В.╨╡. ╨┐╨╗╨░╤В╤С╨╢ ╨╕╨╖ ╤Б╨┐╨╕╤Б╨║╨░ ╨╝╨╛╨╢╨╡╤В ╨┐╨╛╨▓╨╗╨╕╤П╤В╤М ╨╜╨░ ╤А╨╡╤И╨╡╨╜╨╕╨╡ ╨╛ ╤В╨╡╨║╤Г╤Й╨╡╨╝ ╨┐╨╗╨░╤В╨╡╨╢╨╡
+            total += hostPayment.getSum(); //╤В╨╛ ╨┤╨╛╨▒╨░╨▓╨╗╤П╨╡╨╝ ╨╡╨│╨╛ ╨║ ╨╕╤В╨╛╨│╨╛╨▓╨╛╨╣ ╤Б╤Г╨╝╨╝╨╡
+            count++;                       //╨╕ ╨▓ ╨║╨╛╨╗╨╕╤З╨╡╤Б╤В╨▓╨╛ ╨┐╨╗╨░╤В╨╡╨╢╨╡╨╣
          }
       }
 

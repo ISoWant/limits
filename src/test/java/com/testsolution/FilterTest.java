@@ -1,13 +1,15 @@
 package com.testsolution;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.Timeout;
 
 import java.time.LocalTime;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class FilterTest {
    private static Filter filter = new Filter();
@@ -35,9 +37,9 @@ public class FilterTest {
    @Test
    public void test_edit_limit() {
       filter.getLimits().get(3).setTotal(300.0f); //4. Не более 3000 (-> 300) руб. в течение одного часа за одну услугу(*)
-      Payment payment = new Payment(lenta, service2, 350);
-      filter.paymentReview(payment);
-      assertEquals(payment, filter.getTbc().get(0));
+      Payment invalidPayment = new Payment(lenta, service2, 350);
+      filter.paymentReview(invalidPayment);
+      assertEquals(invalidPayment, filter.getTbc().get(0));
    }
 
 
@@ -63,31 +65,16 @@ public class FilterTest {
    }
 
    @Test
-   public void test_add_invalid_payment() {
-      Payment payment = new Payment(lenta, service2, 2001); //не уд. лимиту 3. Не более 2000 руб. в сутки по одинаковым платежам(**)
-      filter.paymentReview(payment);
-
-      assertEquals(payment, filter.getTbc().get(0));
-   }
-
-   @Test
-   public void test_add_invalid_in_night() {
-      Payment payment = new Payment(lenta, service2, 1007); //Не уд. лимиту 2. Не более 1000 руб. ночью с 23:00 до 9:00 утра за одну услугу(*)
-      Calendar calendar = new GregorianCalendar();
-      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 23);
-      filter.paymentReview(payment);
-
-      assertEquals(payment, filter.getTbc().get(0));
-   }
-
-   @Test
    public void test_add_correct_payment_at_different_days() {
       Payment payment = new Payment(bank, service1, 1999);
       Payment payment1 = new Payment(bank, service1, 1999);
 
+      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 12); //Чтобы не попасть в лими 2
+      payment1.getCalendar().set(Calendar.HOUR_OF_DAY, 11);
       filter.paymentReview(payment, payment1);// payment1 не уд. лимиту 3. Не более 2000 руб. в сутки по одинаковым платежам(**)
 
       payment1.getCalendar().set(Calendar.DATE, (payment.getCalendar().get(Calendar.DATE) % 10) + 1);
+
 
       filter.paymentReview(payment1); //теперь платёжи происходят в различные дни, а значит ничто не мешает его провести
 
@@ -95,45 +82,132 @@ public class FilterTest {
       assertEquals(payment1, filter.getReadyToHost().get(1));
    }
 
-
    @Test
    public void test_add_invalid_and_correct_payment() {
       Payment payment = new Payment(karauta, service3, 1501);
-      Payment payment1 = new Payment(lenta, service3, 1500); // не уд. лимиту 4. Не более 3000 руб. в течение одного часа за одну услугу(*)
-      filter.paymentReview(payment, payment1);
+      Payment invalidPayment = new Payment(lenta, service3, 1500); // не уд. лимиту 4. Не более 3000 руб. в течение одного часа за одну услугу(*)
+
+      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 12); //Чтобы не попасть в лимит 2
+      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 12); //Чтобы не попасть в лимит 2 и навярняка в один час
+
+      filter.paymentReview(payment, invalidPayment);
       assertEquals(payment, filter.getReadyToHost().get(0));
-      assertEquals(payment1, filter.getTbc().get(0));
+      assertEquals(invalidPayment, filter.getTbc().get(0));
    }
 
    @Test
    public void test_add_invalid_and_2_correct_payment() {
       Payment payment = new Payment(karauta, service3, 1501);
-      Payment payment1 = new Payment(lenta, service3, 1500); // не уд. лимиту 4. Не более 3000 руб. в течение одного часа за одну услугу(*)
+      Payment invalidPayment = new Payment(lenta, service3, 1500); // не уд. лимиту 4. Не более 3000 руб. в течение одного часа за одну услугу(*)
       Payment payment2 = new Payment(lenta, service3, 1450);
-      filter.paymentReview(payment, payment1, payment2);
+
+      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 10); //Чтобы не попасть в лимит 2
+      invalidPayment.getCalendar().set(Calendar.HOUR_OF_DAY, 10);//И точно в течение одного часа
+      payment2.getCalendar().set(Calendar.HOUR_OF_DAY, 10);
+
+
+      filter.paymentReview(payment, invalidPayment, payment2);
       assertEquals(payment2, filter.getReadyToHost().get(1));
-      assertEquals(payment1, filter.getTbc().get(0));
+      assertEquals(invalidPayment, filter.getTbc().get(0));
    }
 
    @Test
    public void test_add_11_payments_in_favor_of_one_client() {
       Payment payment = new Payment(karauta, service3, 101);
+      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 12); //Чтобы обойти лимит 2
+
 
       for (int i = 0; i < 10; i++) {
          filter.paymentReview(payment);
       }
 
-      Payment payment1 = new Payment(karauta, service3, 200);
+      Payment invalidPayment = new Payment(karauta, service3, 200);
+      invalidPayment.getCalendar().set(Calendar.HOUR_OF_DAY, 12);
 
-      filter.paymentReview(payment1);
+
+      filter.paymentReview(invalidPayment);
 
       assertEquals(10, filter.getReadyToHost().size());
-      assertEquals(payment1, filter.getTbc().get(0));  //7. Не более 10 платежей не более чем на 3000 руб.(***) в течение двух часов в пользу одного клиента
+      assertEquals(invalidPayment, filter.getTbc().get(0));  //7. Не более 10 платежей не более чем на 3000 руб.(***) в течение двух часов в пользу одного клиента
    }
 
    @Test
-   public void test_add_20_correct_and_20_invalid_payments() {
-      Limit limit5 = filter.getLimits().get(4); //5. Не более 20 одинаковых платежей(**) в сутки
+   public void test_add_payments_in_favor_of_one_client() {
+      filter.deleteLimit(2);  //3. Не более 2000 руб. в сутки по одинаковым платежам(**)
+      filter.deleteLimit(3);  //4. Не более 3000 руб. в течение одного часа за одну услугу(*)
+
+      Payment payment = new Payment(karauta, service3, 900);
+      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 11); // чтобы не попасть в лимит 2
+
+      filter.paymentReview(payment, payment, payment, payment);
+
+      assertEquals(3, filter.getReadyToHost().size());
+      assertEquals(payment, filter.getTbc().get(0)); //7. Не более 10 платежей не более чем на 3000 руб.(***) в течение двух часов в пользу одного клиента
+   }
+
+   @Test
+   public void test_add_only_first_limit() {    //1. Не более 5000 руб. днем с 9:00 утра до 23:00 за одну услугу(*)
+      Limit limit1 = filter.getLimits().get(0);
+      filter.getLimits().clear();
+      filter.addLimit(limit1);
+
+      Payment payment = new Payment(lenta, service2, 3758);
+      Payment invalidPayment = new Payment(karauta, service2, 4458);
+      Payment payment1 = new Payment(karauta, service3, 2458);
+      payment.getCalendar().set(Calendar.HOUR_OF_DAY, 11);
+      invalidPayment.getCalendar().set(Calendar.HOUR_OF_DAY, 19);
+      payment1.getCalendar().set(Calendar.HOUR_OF_DAY, 19);
+
+      filter.paymentReview(payment, invalidPayment, payment1);
+
+      assertEquals(2, filter.getReadyToHost().size());
+      assertEquals(invalidPayment, filter.getTbc().get(0));
+   }
+
+   @Test
+   public void test_add_only_second_limit() {//2. Не более 1000 руб. ночью с 23:00 до 9:00 утра за одну услугу(*)
+      Limit limit2 = filter.getLimits().get(1);
+      filter.getLimits().clear();
+      filter.addLimit(limit2);
+
+      Payment invalidPayment = new Payment(lenta, service2, 1007);
+      invalidPayment.getCalendar().set(Calendar.HOUR_OF_DAY, 23);
+      filter.paymentReview(invalidPayment);
+
+      assertEquals(invalidPayment, filter.getTbc().get(0));
+   }
+
+   @Test
+   public void test_add_only_third_limit() { //3. Не более 2000 руб. в сутки по одинаковым платежам(**)
+      Limit limit3 = filter.getLimits().get(2);
+      filter.getLimits().clear();
+      filter.addLimit(limit3);
+
+      Payment invalidPayment= new Payment(lenta, service2, 2001);
+      filter.paymentReview(invalidPayment);
+
+      assertEquals(invalidPayment, filter.getTbc().get(0));
+   }
+
+   @Test
+   public void test_add_only_forth_limit() { //4. Не более 3000 руб. в течение одного часа за одну услугу(*)
+      Limit limit4 = filter.getLimits().get(3);
+      filter.getLimits().clear();
+      filter.addLimit(limit4);
+
+      Payment payment = new Payment(bank, service5, 1000);
+      Payment invalidPayment = new Payment(bank, service5, 2500);
+      Payment payment1 = new Payment(lenta, service5, 500);
+
+      filter.paymentReview(payment, invalidPayment, payment1);
+
+      assertEquals(2, filter.getReadyToHost().size());
+      assertEquals(invalidPayment, filter.getTbc().get(0));
+   }
+
+   @Test
+   public void test_add_only_fifth_limit() {//5. Не более 20 одинаковых платежей(**) в сутки
+      Limit limit5 = filter.getLimits().get(4);
       filter.getLimits().clear();
       filter.addLimit(limit5);
 
@@ -148,20 +222,7 @@ public class FilterTest {
    }
 
    @Test
-   public void test_add_payments_in_favor_of_one_client() {
-      filter.deleteLimit(2);  //3. Не более 2000 руб. в сутки по одинаковым платежам(**)
-      filter.deleteLimit(3);  //4. Не более 3000 руб. в течение одного часа за одну услугу(*)
-
-      Payment payment = new Payment(karauta, service3, 900);
-
-      filter.paymentReview(payment, payment, payment, payment);
-
-      assertEquals(3, filter.getReadyToHost().size());
-      assertEquals(payment, filter.getTbc().get(0)); //7. Не более 10 платежей не более чем на 3000 руб.(***) в течение двух часов в пользу одного клиента
-   }
-
-   @Test
-   public void test_add_40_correct_and_5_invalid_payments() {
+   public void test_add_only_sixth_limit() {
       Limit limit6 = filter.getLimits().get(5); //6. Не более 40 платежей не более чем на 4000 руб.(***) с 10:00 до 17:00 за одну услугу(*)
       filter.getLimits().clear();
       filter.addLimit(limit6);
@@ -175,6 +236,29 @@ public class FilterTest {
 
       assertEquals(40, filter.getReadyToHost().size());
       assertEquals(5, filter.getTbc().size());
+   }
+
+   @Test
+   public void test_add_only_seventh_limit() {//7. Не более 10 платежей не более чем на 3000 руб.(***) в течение двух часов в пользу одного клиента
+      Limit limit7 = filter.getLimits().get(6);
+      filter.getLimits().clear();
+      filter.addLimit(limit7);
+
+      Payment payment = new Payment(karauta, service2, 1001);
+      Payment payment1 = new Payment(karauta, service3, 50);
+
+      filter.paymentReview(payment, payment, payment);
+
+      for (int i = 0; i < 10; i++) {
+         filter.paymentReview(payment1);
+      }
+
+      assertEquals(10, filter.getReadyToHost().size());
+      assertEquals(payment, filter.getReadyToHost().get(0));
+      assertEquals(payment1, filter.getReadyToHost().get(3));
+      assertEquals(3, filter.getTbc().size());
+      assertEquals(payment, filter.getTbc().get(0));
+      assertEquals(payment1, filter.getTbc().get(1));
    }
 
    @Before
